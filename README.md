@@ -1283,4 +1283,335 @@ The exported Go API of this module should currently be considered unstable, and 
 
 ## License
 
-This project is licensed under the terms of the MIT open source license. Please refer to [MIT](./LICENSE) for the full terms.
+This project is licensed under the terms of the MIT open source license. Please refer to [MIT](./LICENSE) for the full terms.Tokyo Predictor Roulette 
+Con descripción para los usuarios y guías ilustradas, sonidos, animaciones, fichas con valores de $2, $2.5, $4, $5, $10, $20, $50, $100, $200, $500, $1K, $2.5K, $5K y $10K. 100% real  off line. Para evitar acciones en contra de la ley. 
+Esta App Predictora de resultados: se basa en Las ruletas qué usan RNG (Random Number Generator) verdadero, que es impredecible diseño (es aleatorio y justo). No se puede predecir con certeza, pero podemos crear un simulador/clon que:
+ Genera spins aleatorios usando RNG en código.
+ Analiza historia de spins para sugerir "predicciones" basadas en patrones estadísticos (como números calientes/fríos, y sus demás secciones para que los puedes ver el jugador. ), aunque esto es solo para simulación y no garantiza ganancias reales (es la falacia del jugador).
+ Estrategias: Apis usadas en casinos reales tales como novibet, Mexlucky, Fundalor, Betmaster, etc
+ RNG: Usaremos el RNG nativo de Kotlin/Java para generar números aleatorios, 
+ Martingale: Estrategia de apuestas donde doblas la apuesta tras una pérdida, para recuperar en la siguiente ganancia. La implementaremos en el simulador.
+ PRACMATIC (asumiendo Pragmatic Play): Pragmatic es un proveedor de juegos de casino. No podemos integrar su API real en una app personal (requiere licencias, credenciales y es para operadores de casinos, no usuarios individuales; cuesta miles de dólares y viola términos si se hace sin permiso). En cambio, simularemos un estilo similar casi igual a sus ruletas (como Lucky 6 o Mega Roulette, wc ), basado en descripciones públicas.
+ La app se desarrolla en Kotlin usando Android Studio. Te proporcionaré el código fuente completo para que lo compiles e instales. Necesitas:
+ Instalar Android Studio (gratuito).
+ Crear un nuevo proyecto vacío.
+ Copiar los archivos que te doy.
+ Compilar y correr en emulador adaptado: Android, ios, lap portátil, lap de escritorio, tabletas, etc
+ No requiere permisos especiales.
+ Advertencia importante: Esto es un simulador educativo y de entretenimiento. Mayores de 18 años. No es para apuestas reales, ya que las ruletas en casinos online son reguladas y no PREDECIBLES. AVISO IMPORTANTE: El gambling puede ser adictivo; juega responsablemente. No garantiza ganancias; el RNG es aleatorio.
+ Cómo usar el código
+ Abre Android Studio, crea un nuevo proyecto "Empty Activity" con Kotlin y todo lo necesario para su perfecta fusión de entretenimiento nivel real. 
+ Reemplaza los archivos en app/src/main con los que te doy.
+ Agrega dependencias en build.gradle.kts (módulo app):
+ dependencies {
+   implementation("androidx.core:core-ktx:1.13.1")
+   implementation("androidx.appcompat:appcompat:1.7.0")
+   implementation("com.google.android.material:material:1.12.0")
+   implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+   // Para gráficos simples (ruleta)
+   implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+ }
+ Sync Gradle, build y run.
+ La app tendrá:
+ Selección de ruleta (Europea/Americana).
+ Botón para spin (genera RNG).
+ Historia de spins hasta 10000 tiros almacenados para tu récord personal, estadísticas de aciertos y perdidas, 
+ Predicción: Sugiere números basados en frecuencia (calientes).
+ Martingale: Simula apuestas, dobla en pérdidas.
+ Simulación Pragmátic Play. 
+ Código Fuente Completo
+1. MainActivity.kt (Lógica principal)
+
+ package com.example.ruletapredictora
+import android.os.Bundle
+ import android.widget.Button
+ import android.widget.RadioButton
+ import android.widget.TextView
+ import androip.AppCompatActivity
+ import com.github.mikephil.charting.charts.PieChart
+ import com.github.mikephil.charting.data.PieData
+ import com.github.mikephil.charting.data.PieDataSet
+ import com.github.mikephil.charting.data.PieEntry
+ import com.github.mikephil.charting.utils.ColorTemplate
+ import kotlin.random.Random
+class MainActivity : AppCompatActivity() {
+   private lateinit var tvResultado: TextView
+   private lateinit var tvHistoria: TextView
+   private lateinit var tvPrediccion: TextView
+   private lateinit var tvMartingale: TextView
+   private lateinit var tvPragmatic: TextView
+   pri
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// MainActivity.kt (Lógica principal completa)
+
+package com.example.ruletapredictora
+
+import android.os.Bundle
+import android.view.View
+import android.widget.Button
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import com.github.mikephil.charting.charts.PieChart
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.utils.ColorTemplate
+import kotlin.random.Random
+import android.animation.ObjectAnimator
+import android.media.MediaPlayer
+import android.view.animation.DecelerateInterpolator
+import android.widget.ImageView
+import android.widget.ScrollView
+import androidx.constraintlayout.widget.ConstraintLayout
+import java.util.*
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var tvResultado: TextView
+    private lateinit var tvHistoria: TextView
+    private lateinit var tvPrediccion: TextView
+    private lateinit var tvMartingale: TextView
+    private lateinit var tvPragmatic: TextView
+    private lateinit var btnSpin: Button
+    private lateinit var btnAyuda: Button  // Botón para guías ilustradas
+    private lateinit var radioGroupTipoRuleta: RadioGroup
+    private lateinit var radioGroupApuestaMartingale: RadioGroup  // Para elegir tipo de apuesta (rojo/negro/par/impar)
+    private lateinit var pieChart: PieChart
+    private lateinit var ivRuleta: ImageView  // Para animación de ruleta
+    private lateinit var mediaPlayerSpin: MediaPlayer  // Para sonido de spin
+
+    private var historiaSpins: MutableList<Int> = mutableListOf()
+    private var tipoRuleta: String = "Europea"  // Por defecto Europea
+    private var apuestaActual: Double = 2.0  // Apuesta inicial para Martingale
+    private var balanceMartingale: Double = 1000.0  // Balance inicial simulado
+    private var pragmaticMultiplicador: Int = 1  // Para simulación Pragmatic
+    private var tipoApuestaMartingale: String = "Rojo"  // Por defecto
+
+    // Valores de fichas
+    private val valoresFichas = listOf(2.0, 2.5, 4.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 2500.0, 5000.0, 10000.0)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // Inicializar UI
+        tvResultado = findViewById(R.id.tvResultado)
+        tvHistoria = findViewById(R.id.tvHistoria)
+        tvPrediccion = findViewById(R.id.tvPrediccion)
+        tvMartingale = findViewById(R.id.tvMartingale)
+        tvPragmatic = findViewById(R.id.tvPragmatic)
+        btnSpin = findViewById(R.id.btnSpin)
+        btnAyuda = findViewById(R.id.btnAyuda)
+        radioGroupTipoRuleta = findViewById(R.id.radioGroupTipoRuleta)
+        radioGroupApuestaMartingale = findViewById(R.id.radioGroupApuestaMartingale)
+        pieChart = findViewById(R.id.pieChart)
+        ivRuleta = findViewById(R.id.ivRuleta)
+
+        // Inicializar sonido (agrega un archivo raw/spin_sound.mp3 en res/raw)
+        mediaPlayerSpin = MediaPlayer.create(this, R.raw.spin_sound)
+
+        // Configurar radio buttons para tipo de ruleta
+        radioGroupTipoRuleta.setOnCheckedChangeListener { _, checkedId ->
+            tipoRuleta = when (checkedId) {
+                R.id.radioEuropea -> "Europea"
+                R.id.radioAmericana -> "Americana"
+                else -> "Europea"
+            }
+        }
+
+        // Configurar radio buttons para tipo de apuesta Martingale
+        radioGroupApuestaMartingale.setOnCheckedChangeListener { _, checkedId ->
+            tipoApuestaMartingale = when (checkedId) {
+                R.id.radioRojo -> "Rojo"
+                R.id.radioNegro -> "Negro"
+                R.id.radioPar -> "Par"
+                R.id.radioImpar -> "Impar"
+                else -> "Rojo"
+            }
+        }
+
+        // Botón de spin
+        btnSpin.setOnClickListener {
+            realizarSpin()
+        }
+
+        // Botón de ayuda para guías ilustradas
+        btnAyuda.setOnClickListener {
+            mostrarGuia()
+        }
+
+        // Inicializar gráfico
+        actualizarGrafico()
+    }
+
+    private fun realizarSpin() {
+        // Reproducir sonido
+        mediaPlayerSpin.start()
+
+        // Animación de ruleta (rotación aleatoria para simular spin real)
+        val rotacionAleatoria = 360f * Random.nextInt(5, 10) + Random.nextInt(0, 360)
+        val animator = ObjectAnimator.ofFloat(ivRuleta, "rotation", 0f, rotacionAleatoria)
+        animator.duration = 4000  // 4 segundos para más realismo
+        animator.interpolator = DecelerateInterpolator()
+        animator.start()
+
+        // Generar número aleatorio con RNG
+        val maxNum = if (tipoRuleta == "Europea") 36 else 37  // 0-36 Europea, 0-37 con 00 Americana (38 slots pero RNG de 0 a 37)
+        val resultado = Random.nextInt(0, maxNum + 1)
+        tvResultado.text = "Resultado: $resultado"
+
+        // Determinar color y paridad
+        val esCero = resultado == 0 || (tipoRuleta == "Americana" && resultado == 37)  // 37 como 00
+        val color = if (esCero) "Verde" else if (esRojo(resultado)) "Rojo" else "Negro"
+        val paridad = if (esCero) "Cero" else if (resultado % 2 == 0) "Par" else "Impar"
+
+        // Agregar a historia (máximo 10000)
+        if (historiaSpins.size >= 10000) {
+            historiaSpins.removeAt(0)
+        }
+        historiaSpins.add(resultado)
+        // Mostrar solo los últimos 20 para no sobrecargar el texto
+        val historiaReciente = historiaSpins.takeLast(20).joinToString(", ")
+        tvHistoria.text = "Historia reciente: $historiaReciente (Total: ${historiaSpins.size})"
+
+        // Predicción basada en frecuencias (números calientes/fríos, colores, secciones)
+        val frecuencias = historiaSpins.groupingBy { it }.eachCount()
+        val caliente = frecuencias.maxByOrNull { it.value }?.key ?: 0
+        val frio = frecuencias.minByOrNull { it.value }?.key ?: 0
+        val freqColores = historiaSpins.groupingBy { if (it == 0 || (tipoRuleta == "Americana" && it == 37)) "Verde" else if (esRojo(it)) "Rojo" else "Negro" }.eachCount()
+        val colorCaliente = freqColores.maxByOrNull { it.value }?.key ?: "Rojo"
+        tvPrediccion.text = "Predicción: Número caliente $caliente, Frío $frio, Color caliente $colorCaliente"
+
+        // Simular Martingale con apuesta real basada en tipo elegido
+        var esGanancia = false
+        when (tipoApuestaMartingale) {
+            "Rojo" -> esGanancia = color == "Rojo"
+            "Negro" -> esGanancia = color == "Negro"
+            "Par" -> esGanancia = paridad == "Par"
+            "Impar" -> esGanancia = paridad == "Impar"
+        }
+        if (esGanancia) {
+            balanceMartingale += apuestaActual  // Ganancia 1:1
+            apuestaActual = valoresFichas[0]  // Reset a mínima
+        } else {
+            balanceMartingale -= apuestaActual
+            apuestaActual *= 2  // Dobla, pero cap a máximo si excede balance
+            if (apuestaActual > balanceMartingale) apuestaActual = balanceMartingale
+        }
+        tvMartingale.text = "Martingale ($tipoApuestaMartingale): Balance $balanceMartingale, Apuesta $apuestaActual"
+
+        // Simulación Pragmatic (multiplicadores aleatorios como en Mega Roulette, aplica a números aleatorios)
+        pragmaticMultiplicador = Random.nextInt(1, 51)  // Hasta 50x
+        val numeroLightning = Random.nextInt(1, maxNum + 1)  // Número con multiplicador
+        tvPragmatic.text = "Pragmatic: Multiplicador $pragmaticMultiplicador x en $numeroLightning"
+
+        // Actualizar gráfico de frecuencias
+        actualizarGrafico()
+    }
+
+    private fun esRojo(numero: Int): Boolean {
+        // Colores estándar ruleta Europea/Americana (rojos: 1,3,5,..., rojos específicos)
+        val rojosEuropea = listOf(1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36)
+        val rojosAmericana = rojosEuropea + listOf(2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,31,33,35)  // Ajuste para 00 pero colores similares
+        return if (tipoRuleta == "Europea") numero in rojosEuropea else numero in rojosEuropea  // Simplificado, ignora 00 color
+    }
+
+    private fun actualizarGrafico() {
+        val entries = mutableListOf<PieEntry>()
+        val frecuencias = historiaSpins.groupingBy { it }.eachCount()
+        frecuencias.forEach { (num, count) ->
+            entries.add(PieEntry(count.toFloat(), num.toString()))
+        }
+
+        val dataSet = PieDataSet(entries, "Frecuencias de Números")
+        dataSet.colors = ColorTemplate.COLORFUL_COLORS.toList()
+        val data = PieData(dataSet)
+        pieChart.data = data
+        pieChart.description.text = "Estadísticas de Spins"
+        pieChart.invalidate()
+    }
+
+    fun seleccionarFicha(view: View) {
+        // Set apuestaActual basada en ID del botón
+        apuestaActual = when (view.id) {
+            R.id.btnFicha2 -> 2.0
+            R.id.btnFicha25 -> 2.5
+            R.id.btnFicha4 -> 4.0
+            R.id.btnFicha5 -> 5.0
+            R.id.btnFicha10 -> 10.0
+            R.id.btnFicha20 -> 20.0
+            R.id.btnFicha50 -> 50.0
+            R.id.btnFicha100 -> 100.0
+            R.id.btnFicha200 -> 200.0
+            R.id.btnFicha500 -> 500.0
+            R.id.btnFicha1K -> 1000.0
+            R.id.btnFicha25K -> 2500.0
+            R.id.btnFicha5K -> 5000.0
+            R.id.btnFicha10K -> 10000.0
+            else -> 2.0
+        }
+        tvMartingale.text = "Apuesta seleccionada: $apuestaActual"
+    }
+
+    private fun mostrarGuia() {
+        // Diálogo con guías ilustradas (texto + imágenes si agregas ImageView en dialog)
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Guía de Uso")
+        builder.setMessage(
+            "Spin: Gira la ruleta y genera un resultado aleatorio.\n" +
+            "Historia: Muestra los últimos spins (hasta 10,000 almacenados).\n" +
+            "Predicción: Sugiere números y colores basados en estadísticas (solo simulación).\n" +
+            "Martingale: Simula estrategia doblando apuestas en pérdidas. Elige tipo (rojo/negro/par/impar).\n" +
+            "Pragmatic: Simula multiplicadores como en juegos de casino.\n" +
+            "Fichas: Selecciona valor de apuesta.\n" +
+            "Advertencia: Esto es entretenimiento, no gambling real."
+        )
+        // Puedes agregar una ImageView con drawable/guia.png para ilustración
+        builder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+        builder.show()
+    }
+
+    override fun onDestroy() {
+        mediaPlayerSpin.release()
+        super.onDestroy()
+    }
+}
